@@ -7,7 +7,50 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @movies = Movie.all
+    @all_ratings = Movie.ratings
+
+    redirect = false
+
+    #This is where we determine which category is going to be sorted
+    @category = nil
+    if params.has_key?(:category)
+      @category = params[:category]
+    elsif session.has_key?(:category)
+      @category = session[:category]
+      redirect = true
+    end
+    
+    #This is the sorting function
+    @sort = nil
+    if params.has_key?(:sort)
+      @sort = params[:sort]
+    elsif session.has_key?(:sort)
+      @sort = session[:sort]
+      redirect = true
+    end
+    
+    #Here is where the ratings are determined
+    @ratings =  {"G" => "1", "PG" => "1", "PG-13" => "1", "R" => "1", "NC-17" => "1"}
+    if params.has_key?(:ratings)
+      @ratings = params[:ratings]
+    elsif session.has_key?(:ratings)
+      @ratings = session[:ratings]
+      redirect = true
+    end
+
+    @movies = Movie.where("rating in (?)", @ratings.keys)
+    session[:ratings] = @ratings
+
+    if @category and @sort
+      @movies = @movies.find(:all, :order => "#{@category} #{@sort}")
+      session[:category] = @category
+      session[:sort] = @sort
+    end
+
+    if redirect
+      flash.keep
+      redirect_to movies_path({:category => @category, :sort => @sort, :ratings => @ratings})
+    end
   end
 
   def new

@@ -1,12 +1,24 @@
 -#  This file is app/views/movies/index.html.haml
 %h1 All Movies
 
+-# This is the check box form list for determining which movie ratings to include
+= form_tag movies_path, :method => :get, "id" => "ratings_form" do
+  Include:
+  - @all_ratings.each do |rating|
+    = rating
+    = check_box_tag "ratings[#{rating}]", rating, @ratings[rating] ? true : false
+  = submit_tag 'Refresh', "id" => "ratings_submit"
+
 %table#movies
   %thead
     %tr
-      %th Movie Title
+      -# This line is the link for sorting by title
+      %th{:class => "#{@category == "title" ? "hilite" : ""}"}
+        %a#title_header{:href => movies_path({"category" => "title", "sort" => "asc", "ratings" => @ratings})} Movie Title
       %th Rating
-      %th Release Date
+      -# And this line is for sorting by release date
+      %th{:class => "#{@category == "release_date" ? "hilite" : ""}"}
+        %a#release_date_header{:href => movies_path({"category" => "release_date", "sort" => "asc", "ratings" => @ratings})} Release Date
       %th More Info
   %tbody
     - @movies.each do |movie|
